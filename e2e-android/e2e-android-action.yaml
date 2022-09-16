@@ -1,0 +1,19 @@
+name: "Test E2E Android"
+description: "sets for mobile"
+runs:
+  using: "composite"
+  steps:
+    - name: Build Tests e2e Android
+      shell: bash
+      run: yarn e2e:build-android:release
+
+    - name: Run Tests e2e Android
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 30
+        target: default
+        arch: x86_64
+        profile: pixel
+        avd-name: Pixel_4_API_30
+        # script: yarn e2e:test-android:release
+        script: bash ${{ github.workspace }}/.github/scripts/run-e2e-android-release.sh

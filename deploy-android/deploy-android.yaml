@@ -1,0 +1,50 @@
+name: "Deploy Android"
+description: "deploys Android internal app"
+inputs:
+  version:  # version number
+    description: 'Version number'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: export env variable
+      shell: bash
+      run: export ENVFILE=config/.env.production
+
+    - name: Run Jetifier
+      shell: bash
+      run: yarn jetify
+
+    - name: Create Bundle
+      shell: bash
+      run: yarn bundle-android
+
+    - name: Remove Created files
+      shell: bash
+      run: rm -rf android/app/src/main/res/drawable-* && rm -rf android/app/src/main/res/raw/*
+
+    - name: Stage Changed Files
+      shell: bash
+      run: git add .
+
+    - name: Commit Changed Files
+      shell: bash
+      run: git commit -m "feat(release): android pre-release"
+
+    - name: Deploy Android
+      shell: bash
+      run: cd android && fastlane deploy && cd ..
+
+    - name: Deploy CodePush
+      shell: bash
+      run: yarn oau-android
+
+    - name: Upload Source Maps Bugsnag
+      shell: bash
+      run: cd build/CodePush && curl --http1.1 https://upload.bugsnag.com/react-native-source-map \
+    -F apiKey=c65c8628f3d6e16804fc973dc743904d \
+    -F codeBundleId=${{ inputs.version }}-b0 \
+    -F dev=false \
+    -F platform=android \
+    -F sourceMap=@index.android.bundle.map \
+    -F bundle=@index.android.bundle

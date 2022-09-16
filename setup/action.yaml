@@ -1,0 +1,25 @@
+name: "Setup Mobile"
+description: "sets for mobile"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: "16.13.2"
+
+    - name: Install Yarn Dependencies
+      shell: bash
+      run: yarn install
+
+    - name: Install Java JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: "11"
+        distribution: "adopt"
+
+    # - name: Install Pod Dependencies
+    #   shell: bash
+    #   run: cd ./ios && pod install && cd ..

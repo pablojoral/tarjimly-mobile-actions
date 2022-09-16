@@ -1,0 +1,12 @@
+name: "Test E2E iOS"
+description: "sets for mobile"
+runs:
+  using: "composite"
+  steps:
+    - name: Build Tests e2e iOS
+      shell: bash
+      run: yarn e2e:build-ios:release
+
+    - name: Run Tests e2e iOS
+      shell: bash
+      run: e2e:test-ios:release

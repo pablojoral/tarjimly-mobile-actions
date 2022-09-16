@@ -1,0 +1,50 @@
+name: "Deploy iOS"
+description: "deploys iOS internal app"
+inputs:
+  version:  # version number
+    description: 'Version number'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Install Pod Dependencies
+      shell: bash
+      run: cd ./ios && pod install && cd ..
+
+    - name: export env variable
+      shell: bash
+      run: export ENVFILE=config/.env.production
+
+    - name: Delete Old Builds
+      shell: bash
+      run: cd ios && rm -rf build/CodePush && cd ..
+
+    - name: Create Bundle
+      shell: bash
+      run: yarn bundle-ios
+
+    - name: Stage Changed Files
+      shell: bash
+      run: git add .
+
+    - name: Commit Changed Files
+      shell: bash
+      run: git commit -m "feat(release): ios pre-release"
+
+    - name: Release iOS
+      shell: bash
+      run: cd ios && fastlane release && cd..
+
+    - name: Deploy CodePush
+      shell: bash
+      run: yarn oau-ios
+
+    - name: Upload Source Maps Bugsnag
+      shell: bash
+      run: curl --http1.1 https://upload.bugsnag.com/react-native-source-map \
+    -F apiKey=c65c8628f3d6e16804fc973dc743904d \
+    -F codeBundleId=${{ inputs.version }}-b0 \
+    -F dev=false \
+    -F platform=ios \
+    -F sourceMap=@ios-release.bundle.map \
+    -F bundle=@ios-release.bundle
